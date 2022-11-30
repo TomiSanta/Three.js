@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset=utf-8>
+  <title>Űrállomás</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { width: 100%; height: 100% }
+  </style>
+</head>
+<body>
+<script async src="./dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+    "imports": {
+        "three": "./js-r143/build/three.module.js",
+        "trackballcontrols": "./js-r143/examples/jsm/controls/TrackballControls.js"
+    }
+}
+</script>
+<script type="module">
+  import * as THREE from 'three';
+  import { TrackballControls } from 'trackballcontrols';
+
+  let WIDTH, HEIGHT, aspectRatio;
+  let renderer;
+  let scene, camera;
+  let controls;
+  let groupOldala, groupEgesz, groupMasikOldal;
+
+  init();
+  animate();
+
+  function init() {
+    HEIGHT = window.innerHeight;
+    WIDTH = window.innerWidth;
+    aspectRatio = WIDTH / HEIGHT;
+
+    renderer = new THREE.WebGLRenderer( { antialias: false } );
+    renderer.setSize( WIDTH, HEIGHT );
+    renderer.shadowMap.enabled = true;
+    renderer.setClearColor( 0x000000 );
+    document.body.appendChild( renderer.domElement );
+
+    scene = new THREE.Scene();
+
+    camera = new THREE.PerspectiveCamera( 75, aspectRatio, 0.1, 1000 );
+    camera.position.set( 0, 10, 20 );
+    camera.lookAt( scene.position );
+
+    let textureLoader = new THREE.TextureLoader();
+    let texture = textureLoader.load( 'assets/sun.jpg' );
+    let texture2 = textureLoader.load('assets/venus.jpg');
+
+    let gomb = new THREE.SphereGeometry( 4, 30, 30 );
+    let gombMat = new THREE.MeshPhongMaterial( { color: 0xbfbfbf, shininess: 45, specular: 0x80d4ff } );
+    let gombMesh = new THREE.Mesh( gomb, gombMat );
+    scene.add( gombMesh );
+    gombMesh.scale.set( 1.2, 1, 0.9);
+    gombMesh.rotation.x = 90 / 180 * Math.PI;
+    gombMesh.position.x = 4.5;
+    gombMesh.castShadow = true;
+    gombMesh.receiveShadow = true;
+
+    //ITT KEZDODIK A 4. KISBEADANDO!!!
+    groupEgesz = new THREE.Group();
+
+    let kocka = new THREE.BoxGeometry(4, 4, 4);
+    let kockaMat = new THREE.MeshBasicMaterial( { color: 0xfbfbfb } );
+    kockaMat.map = texture;
+    let kockaMesh = new THREE.Mesh( kocka, kockaMat);
+    kockaMesh.scale.set(1, 1, 1);
+    kockaMesh.position.set(0, 0, 40);
+    kockaMesh.rotation.z = 90 / 180 * Math.PI;
+
+    groupEgesz.add(kockaMesh);
+
+    groupOldala = new THREE.Group();
+    groupEgesz.add(groupOldala);
+
+    let egyikoldal = new THREE.CylinderGeometry(2, 2, 18, 25);
+    let egyikoldalMat = new THREE.MeshPhongMaterial({color: 0xfbfbfb});
+    let egyikoldalMesh = new THREE.Mesh(egyikoldal,egyikoldalMat);
+    egyikoldalMesh.scale.set(0.3, 0.3, 0.2);
+    egyikoldalMesh.position.set(4.6, 0, 40);
+    egyikoldalMesh.rotation.z = 90 / 180 * Math.PI;
+
+    let holder = new THREE.Object3D();
+    let gyuru5 = new THREE.TorusGeometry(7, 4, 10, 20);
+    let gyuru5Mat = new THREE.MeshBasicMaterial({color:0xfbfbfb});
+    gyuru5Mat.map = texture2;
+    let gyuru5Mesh = new THREE.Mesh( gyuru5, gyuru5Mat);
+    gyuru5Mesh.scale.set(0.3, 0.3, 0.2);
+    gyuru5Mesh.position.set(6, 0, 40);
+    gyuru5Mesh.rotation.y = 90 / 180 * Math.PI;
+    holder.add(gyuru5Mesh);
+
+    groupOldala.add(egyikoldalMesh);
+    groupOldala.add(holder);
+
+    groupMasikOldal = new THREE.Group();
+    groupEgesz.add(groupMasikOldal);
+
+    let masikoldal = new THREE.CylinderGeometry(2, 2, 18, 25);
+    let masikoldalMat = new THREE.MeshPhongMaterial({color:0xfbfbfb});
+    let masikoldalMesh = new THREE.Mesh(masikoldal, masikoldalMat);
+    masikoldalMesh.scale.set(0.3, 0.3, 0.2);
+    masikoldalMesh.position.set(-4.6, 0, 40);
+    masikoldalMesh.rotation.z = 90 / 180 * Math.PI;
+
+    let holder2 = new THREE.Object3D();
+    let gyuru6 = new THREE.TorusGeometry(7, 4, 10, 20);
+    let gyuru6Mat = new THREE.MeshBasicMaterial({color:0xfbfbfb});
+    gyuru6Mat.map = texture2;
+    let gyuru6Mesh = new THREE.Mesh( gyuru6, gyuru6Mat);
+    gyuru6Mesh.scale.set(0.3, 0.3, 0.2);
+    gyuru6Mesh.position.set(-6, 0, 40);
+    gyuru6Mesh.rotation.y = 90 / 180 * Math.PI;
+    holder2.add(gyuru6Mesh);
+
+    groupMasikOldal.add(masikoldalMesh);
+    groupMasikOldal.add(holder2);
+
+    scene.add(groupEgesz);
+
+    let henger = new THREE.CylinderGeometry( 2, 2, 30, 25 );
+    let hengerMat = new THREE.MeshPhongMaterial( { color: 0xbfbfbf } );
+    let hengerMesh = new THREE.Mesh( henger, hengerMat );
+    scene.add( hengerMesh );
+    hengerMesh.scale.set( 1 , 0.7 , 1 );
+    hengerMesh.rotation.z = 90 / 180 * Math.PI;
+    hengerMesh.position.x = -10;
+    hengerMesh.castShadow = true;
+    hengerMesh.receiveShadow = true;
+
+    let henger2 = new THREE.CylinderGeometry( 2, 2, 30, 25 );
+    let hengerMat2 = new THREE.MeshPhongMaterial( { color: 0xbfbfbf } );
+    let hengerMesh2 = new THREE.Mesh( henger2, hengerMat2 );
+    scene.add( hengerMesh2 );
+    hengerMesh2.scale.set( 1 , 0.7 , 1 );
+    hengerMesh2.rotation.z = 90 / 180 * Math.PI;
+    hengerMesh2.position.x = 19;
+    hengerMesh2.castShadow = true;
+    hengerMesh2.receiveShadow = true;
+
+    //Pont fény
+    let pontfeny = new THREE.PointLight(0xff0080, 0.5);
+    pontfeny.position.set(0, 20, 0);
+    pontfeny.castShadow = true;
+    pontfeny.shadow.mapSize.width = 1024;
+    pontfeny.shadow.mapSize.height = 1024;
+    scene.add(pontfeny);
+
+    let helper1 = new THREE.PointLightHelper(pontfeny, 3, 0xffffff);
+    scene.add(helper1);
+
+    //Ambiens fény
+    let ambiensfeny = new THREE.AmbientLight(0x196619, 0.6);
+    scene.add(ambiensfeny);
+
+    //Reflektor fény
+    let reffeny = new THREE.SpotLight(0x00802b, 0.8, 30, THREE.MathUtils.degToRad(15), 0.7 );
+    reffeny.position.set(-3, 0, 15);
+    reffeny.target = gombMesh;
+    scene.add(reffeny);
+
+    let helper2 = new THREE.SpotLightHelper(reffeny, 0xffffff);
+    scene.add(helper2);
+
+    let egyikvege = new THREE.PlaneGeometry( 4, 7, 2, 30 );
+    let egyikvegeMat = new THREE.MeshPhongMaterial( { color: 0xffffb3, wireframe: true } );
+    let egyikvegeMesh = new THREE.Mesh( egyikvege, egyikvegeMat );
+    scene.add( egyikvegeMesh );
+    egyikvegeMesh.scale.set(2, 3, 2);
+    egyikvegeMesh.rotation.y = 90 / 180 * Math.PI;
+    egyikvegeMesh.position.x = -20.5;
+    egyikvegeMesh.castShadow = true;
+    egyikvegeMesh.receiveShadow = true;
+
+    let masikvege = new THREE.PlaneGeometry( 4, 7, 2, 30 );
+    let masikvegeMat = new THREE.MeshPhongMaterial( { color: 0xffffb3, wireframe: true } );
+    let masikvegeMesh = new THREE.Mesh( masikvege, masikvegeMat );
+    scene.add( masikvegeMesh );
+    masikvegeMesh.scale.set(2, 3, 2);
+    masikvegeMesh.rotation.y = 90 / 180 * Math.PI;
+    masikvegeMesh.position.x = 29.5;
+    masikvegeMesh.castShadow = true;
+    masikvegeMesh.receiveShadow = true;
+
+    let gyuru = new THREE.TorusGeometry( 10, 3, 16, 100 );
+    let gyuruMat = new THREE.MeshPhongMaterial( { color: 0xffc299, wireframe: false } );
+    let gyuruMesh = new THREE.Mesh( gyuru, gyuruMat );
+    scene.add( gyuruMesh );
+    gyuruMesh.scale.set(0.3, 0.3, 0.2);
+    gyuruMesh.rotation.y = 90 / 180 * Math.PI;
+    gyuruMesh.position.x = 23;
+    gyuruMesh.castShadow = true;
+    gyuruMesh.receiveShadow = true;
+
+    let gyuru2 = new THREE.TorusGeometry( 10, 3, 16, 100 );
+    let gyuruMat2 = new THREE.MeshPhongMaterial( { color: 0x99c2ff, wireframe: false } );
+    let gyuruMesh2 = new THREE.Mesh( gyuru2, gyuruMat2 );
+    scene.add( gyuruMesh2 );
+    gyuruMesh2.scale.set(0.3, 0.3, 0.2);
+    gyuruMesh2.rotation.y = 90 / 180 * Math.PI;
+    gyuruMesh2.position.x = 16;
+    gyuruMesh2.castShadow = true;
+    gyuruMesh2.receiveShadow = true;
+
+    let gyuru3 = new THREE.TorusGeometry( 10, 3, 16, 100 );
+    let gyuruMat3 = new THREE.MeshPhongMaterial( { color: 0x99c2ff, wireframe: false } );
+    let gyuruMesh3 = new THREE.Mesh( gyuru3, gyuruMat3 );
+    scene.add( gyuruMesh3 );
+    gyuruMesh3.scale.set(0.3, 0.3, 0.2);
+    gyuruMesh3.rotation.y = 90 / 180 * Math.PI;
+    gyuruMesh3.position.x = -7;
+    gyuruMesh3.castShadow = true;
+    gyuruMesh3.receiveShadow = true;
+
+    let gyuru4 = new THREE.TorusGeometry( 10, 3, 16, 100 );
+    let gyuruMat4 = new THREE.MeshPhongMaterial( { color: 0xffc299, wireframe: false } );
+    let gyuruMesh4 = new THREE.Mesh( gyuru4, gyuruMat4 );
+    scene.add( gyuruMesh4 );
+    gyuruMesh4.scale.set(0.3, 0.3, 0.2);
+    gyuruMesh4.rotation.y = 90 / 180 * Math.PI;
+    gyuruMesh4.position.x = -13;
+    gyuruMesh4.castShadow = true;
+    gyuruMesh4.receiveShadow = true;
+
+    //Irány fény
+    let iranyfeny = new THREE.DirectionalLight(0xffff4d, 1);
+    iranyfeny.position.set(0, 0, -10);
+    iranyfeny.target = gyuruMesh, gyuruMesh2, gyuruMesh3, gyuruMesh4;
+    scene.add(iranyfeny);
+
+    //let helper3 = new THREE.DirectionalLightHelper(iranyfeny, 0xffffff);
+    //scene.add(helper3);
+
+    //Plusz mash ami maj arnyekot ad az egesz urallomasnak
+    let doboz = new THREE.BoxGeometry(3, 3, 3, 3, 3, 3);
+    let dobozmat = new THREE.MeshPhongMaterial( { color: 0xffffff });
+    let dobozmesh = new THREE.Mesh(doboz, dobozmat);
+    dobozmesh.castShadow = true;
+    dobozmesh.receiveShadow = true;
+    dobozmesh.position.y = 13;
+    scene.add(dobozmesh);
+
+
+
+    window.addEventListener( 'resize', handleWindowResize, false );
+
+    controls = new TrackballControls( camera, renderer.domElement );
+    controls.rotateSpeed = 5.0;
+    controls.panSpeed = 1.0;
+  }
+
+  function handleWindowResize() {
+    HEIGHT = window.innerHeight;
+    WIDTH = window.innerWidth;
+    console.log( 'WIDTH=' + WIDTH + '; HEIGHT=' + HEIGHT );
+    renderer.setSize( WIDTH, HEIGHT );
+    aspectRatio = WIDTH / HEIGHT;
+    camera.aspect = aspectRatio;
+    camera.updateProjectionMatrix();
+
+    render();
+  }
+
+  function animate() {
+    requestAnimationFrame( animate );
+    controls.update();
+    render();
+
+    groupEgesz.rotation.y += 0.01;
+    groupOldala.rotation.z += 0.01;
+    groupMasikOldal.rotation.z += 0.01;
+  }
+
+  function render() {
+    renderer.render( scene, camera );
+  }
+</script>
+</body>
+</html>
